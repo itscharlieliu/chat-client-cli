@@ -7,11 +7,22 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func ConnectWs(addr string) {
-	_, resp, err := websocket.DefaultDialer.Dial(addr, nil)
+func RunClient(send chan string, ipAddr string) {
+	conn, _, err := websocket.DefaultDialer.Dial(ipAddr, nil)
+
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Unable to connect")
 	}
 
-	fmt.Println(resp.Body)
+	defer conn.Close()
+
+	for {
+		select {
+		case msg := <-send:
+			if conn == nil {
+				fmt.Println("Not connected")
+			}
+			conn.WriteJSON(msg)
+		}
+	}
 }
