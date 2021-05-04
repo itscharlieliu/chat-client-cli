@@ -1,8 +1,7 @@
 package main
 
 import (
-	"strconv"
-	"time"
+	"fmt"
 
 	"github.com/itscharlieliu/chat-client-cli/pkg"
 )
@@ -12,9 +11,12 @@ func main() {
 
 	go pkg.RunClient(send, "ws://127.0.0.1:8080")
 
-	for i := 0; true; i++ {
-		send <- "test" + strconv.Itoa(i)
-		time.Sleep(1 * time.Second)
+	for {
+		fmt.Print("Message: ")
+		var msg string
+		fmt.Scanln(&msg)
+		fmt.Println(msg)
+		send <- msg
 	}
 
 }

@@ -22,7 +22,7 @@ func RunClient(send chan string, ipAddr string) {
 			if conn == nil {
 				fmt.Println("Not connected")
 			}
-			conn.WriteJSON(msg)
+			conn.WriteMessage(websocket.TextMessage, []byte(msg))
 		}
 	}
 }
