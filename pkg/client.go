@@ -7,6 +7,18 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+func messageListener(conn *websocket.Conn) {
+	for {
+		_, bytes, err := conn.ReadMessage()
+		if err != nil {
+			log.Panicln(err)
+			return
+		}
+
+		fmt.Println("Recieve: " + string(bytes))
+	}
+}
+
 func RunClient(send chan string, ipAddr string) {
 	conn, _, err := websocket.DefaultDialer.Dial(ipAddr, nil)
 
@@ -16,13 +28,14 @@ func RunClient(send chan string, ipAddr string) {
 
 	defer conn.Close()
 
+	go messageListener(conn)
+
 	for {
-		select {
-		case msg := <-send:
-			if conn == nil {
-				fmt.Println("Not connected")
-			}
-			conn.WriteMessage(websocket.TextMessage, []byte(msg))
+		msg := <-send
+		if conn == nil {
+			fmt.Println("Not connected")
 		}
+		conn.WriteMessage(websocket.TextMessage, []byte(msg))
 	}
+
 }

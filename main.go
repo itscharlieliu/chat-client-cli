@@ -12,7 +12,7 @@ func main() {
 	go pkg.RunClient(send, "ws://127.0.0.1:8080")
 
 	for {
-		fmt.Print("Message: ")
+		fmt.Print("Send: ")
 		var msg string
 		fmt.Scanln(&msg)
 		fmt.Println(msg)
