@@ -14,7 +14,8 @@ func messageListener(conn *websocket.Conn) {
 			log.Panicln(err)
 			return
 		}
-
+		// Return cursor to beginning of line
+		fmt.Print("\033[2A\033[99C")
 		fmt.Println("Recieve: " + string(bytes))
 	}
 }
