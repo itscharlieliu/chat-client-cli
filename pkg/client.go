@@ -3,9 +3,15 @@ package pkg
 import (
 	"fmt"
 	"log"
+	"sync"
 
 	"github.com/gorilla/websocket"
 )
+
+type Client struct {
+	Send chan string
+	Exit chan bool
+}
 
 func messageListener(conn *websocket.Conn) {
 	for {
@@ -14,13 +20,12 @@ func messageListener(conn *websocket.Conn) {
 			log.Panicln(err)
 			return
 		}
-		// Return cursor to beginning of line
-		fmt.Print("\033[2A\033[99C")
 		fmt.Println("Recieve: " + string(bytes))
 	}
 }
 
-func RunClient(send chan string, ipAddr string) {
+func RunClient(client Client, ipAddr string, listen bool, wg *sync.WaitGroup) {
+
 	conn, _, err := websocket.DefaultDialer.Dial(ipAddr, nil)
 
 	if err != nil {
@@ -28,15 +33,22 @@ func RunClient(send chan string, ipAddr string) {
 	}
 
 	defer conn.Close()
+	defer wg.Done()
 
-	go messageListener(conn)
-
-	for {
-		msg := <-send
-		if conn == nil {
-			fmt.Println("Not connected")
-		}
-		conn.WriteMessage(websocket.TextMessage, []byte(msg))
+	if listen {
+		go messageListener(conn)
 	}
 
+	for {
+		select {
+		case msg := <-client.Send:
+			if conn == nil {
+				fmt.Println("Not connected")
+			}
+			conn.WriteMessage(websocket.TextMessage, []byte(msg))
+		case <-client.Exit:
+			return
+		}
+
+	}
 }
